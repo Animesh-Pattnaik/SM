@@ -1,21 +1,21 @@
-import random
 import math
+import random
+
+def poisson_random(avg_rate):
+    events, threshold, product = 0, math.exp(-avg_rate), 1.0
+    while product > threshold:
+        events += 1
+        product *= random.random()
+    return events - 1
 
 def main():
-    mean = float(input("Enter the mean for Poisson distribution: "))
-    n = int(input("Enter the number of random variables to generate: "))
+    avg_rate = float(input("Enter the average rate of occurrence (lambda): "))
+    num_samples = int(input("Enter the number of Poisson-distributed samples to generate: "))
 
-    print("\nGenerated Poisson Random Variables:")
-    for _ in range(n):
-        L = math.exp(-mean)
-        p = 1.0
-        k = 0
-
-        while p > L:
-            k += 1
-            p *= random.random()  # Generate uniform random number between 0 and 1
-
-        print(k - 1)
+    print(f"\nPoisson-distributed random numbers (with λ = {avg_rate}):")
+    for _ in range(num_samples):
+        print(poisson_random(avg_rate), end=" ")
+    print()
 
 if __name__ == "__main__":
     main()

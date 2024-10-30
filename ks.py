@@ -1,47 +1,35 @@
 import numpy as np
-from scipy import stats
 
-n = int(input("Enter the number of random numbers to generate: "))
-distribution = input("Enter the distribution to test (e.g., 'uniform', 'norm'): ")
+def calculate_d_statistic(sample):
+    n = len(sample)
+    sorted_sample = np.sort(sample)
+    
+    D = 0.0
+    for i in range(n):
+        F_obs = (i + 1) / n
+        F_exp = sorted_sample[i]
+        D = max(D, abs(F_obs - F_exp))
+    
+    return D
 
+if __name__ == "__main__":
+    n = int(input("Enter the number of sample values: "))
+    
+    sample = []
+    print("Enter sample values (between 0 and 1):")
+    for _ in range(n):
+        value = float(input())
+        sample.append(value)
 
-if distribution == 'uniform':
-    random_numbers = np.random.uniform(0, 1, n)
-elif distribution == 'norm':
-    random_numbers = np.random.normal(0, 1, n)
-else:
-    print("Unsupported distribution")
-    exit()
+    alpha = float(input("Enter significance level (e.g., 0.05 for 5%): "))
+    critical_value = float(input("Enter the critical value for the K-S test: "))
 
-random_numbers.sort()
-ecdf = np.arange(1, n+1) / n
+    D_statistic = calculate_d_statistic(sample)
 
-if distribution == 'uniform':
-    cdf = random_numbers  
-elif distribution == 'norm':
-    cdf = stats.norm.cdf(random_numbers)
+    print(f"D-statistic: {D_statistic}")
+    print(f"Critical value: {critical_value}")
 
-
-d_max = np.max(ecdf - cdf)
-d_min = np.max(cdf - ecdf)
-
-
-ks_statistic = max(d_max, d_min)
-
-
-print(f"D_max: {d_max}")
-print(f"D_min: {d_min}")
-print(f"KS Statistic (D): {ks_statistic}")
-
-
-ks_statistic_scipy, p_value = stats.kstest(random_numbers, distribution)
-
-print(f"KS Statistic from scipy: {ks_statistic_scipy}")
-print(f"P-value: {p_value}")
-
-
-alpha = 0.05  
-if p_value > alpha:
-    print(f"The sample follows a {distribution} distribution (fail to reject H0).")
-else:
-    print(f"The sample does not follow a {distribution} distribution (reject H0).")
+    if D_statistic < critical_value:
+        print("The null hypothesis is accepted. The sample follows the uniform distribution.")
+    else:
+        print("The null hypothesis is rejected. The sample does not follow the uniform distribution.")
