@@ -1,49 +1,43 @@
 import random
+from collections import Counter
 
-def create_deck():
-    suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
-    ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-    deck = [(rank, suit) for suit in suits for rank in ranks]
+SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+
+def hand_rank(cards):
+    values = sorted([card[0] for card in cards], key=VALUES.index)
+    value_counts = Counter(values)
+    pairs = sum(1 for count in value_counts.values() if count == 2)
+    trips = sum(1 for count in value_counts.values() if count == 3)
+    quads = sum(1 for count in value_counts.values() if count == 4)
+
+    if quads:
+        return (7, values)
+    elif trips and pairs:
+        return (6, values)
+    elif trips:
+        return (3, values)
+    elif pairs == 2:
+        return (2, values)
+    elif pairs:
+        return (1, values)
+    else:
+        return (0, values)
+
+def simulate_poker(num_players=2):
+    deck = [(value, suit) for suit in SUITS for value in VALUES]
     random.shuffle(deck)
-    return deck
+    
+    player_hands = {f"Player {i+1}": [deck.pop(), deck.pop()] for i in range(num_players)}
+    community_cards = [deck.pop() for _ in range(5)]
+    
+    best_hands = {player: hand_rank(hand + community_cards) for player, hand in player_hands.items()}
+    winner = max(best_hands, key=best_hands.get)
 
-def main():
-    deck = create_deck()
+    print("Community Cards:", community_cards)
+    for player, hand in player_hands.items():
+        print(f"{player}'s Hand: {hand}")
+    print("Winner:", winner)
 
-    try:
-        num_players = int(input("Enter the number of players (2-5): "))
-        if num_players < 2 or num_players > 5:
-            print("Error: Number of players must be between 2 and 5!")
-            return
-    except ValueError:
-        print("Error: Invalid input for number of players!")
-        return
-
-    cards_per_player = []
-    total_cards_needed = 0
-
-    for i in range(num_players):
-        try:
-            num_cards = int(input(f"Enter the number of cards for Player {i + 1}: "))
-            cards_per_player.append(num_cards)
-            total_cards_needed += num_cards
-        except ValueError:
-            print("Error: Invalid input for number of cards!")
-            return
-
-    if total_cards_needed > len(deck):
-        print("Error: Not enough cards in the deck!")
-        return
-
-    for i in range(num_players):
-        print(f"\nPlayer {i + 1}'s hand:")
-        hand = deck[:cards_per_player[i]]
-        deck = deck[cards_per_player[i]:]
-        for rank, suit in hand:
-            print(f"{rank} of {suit}")
-
-    print("Hands dealt successfully!")
-
-
-if __name__ == "__main__":
-    main()
+num_players=int(input("Enter number of players: "))
+simulate_poker(num_players)
